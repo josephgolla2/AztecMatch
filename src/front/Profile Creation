@@ -89,9 +89,8 @@ transition:.2s;padding-bottom:15px
 <option>Other</option>
 </select>
 
-<input type="text" id="major" placeholder="Major">
-<input type="text" id="hobbies" placeholder="Hobbies (comma separated)">
-<textarea id="bio" placeholder="Short bio"></textarea>
+<textarea id="bio" placeholder="Short Bio"></textarea>
+<input type="text" id="interests" placeholder="Interests (comma separated)">
 <input type="url" id="photo" placeholder="Photo URL">
 
 <button onclick="addProfile()">Add Profile</button>
@@ -105,11 +104,11 @@ transition:.2s;padding-bottom:15px
 let profiles=[];
 
 function addProfile(){
-const n=name.value,a=age.value,g=gender.value,m=major.value,h=hobbies.value,b=bio.value,p=photo.value;
-if(!n||!a||!g||!m||!h||!b||!p){alert("Please fill all fields");return;}
-profiles.push({name:n,age:a,gender:g,major:m,hobbies:h,bio:b,photo:p});
+const n=name.value,a=age.value,g=gender.value,b=bio.value,i=interests.value,p=photo.value;
+if(!n||!a||!g||!b||!i||!p){alert("Please fill all fields");return;}
+profiles.push({name:n,age:a,gender:g,bio:b,interests:i,photo:p});
 renderProfiles();
-["name","age","gender","major","hobbies","bio","photo"].forEach(id=>document.getElementById(id).value="")
+["name","age","gender","bio","interests","photo"].forEach(id=>document.getElementById(id).value="")
 }
 
 function renderProfiles(){
@@ -122,9 +121,8 @@ card.innerHTML=`
 <h3>${p.name}</h3>
 <p>Age: ${p.age}</p>
 <p>Gender: ${p.gender}</p>
-<p>Major: ${p.major}</p>
-<p>Hobbies: ${p.hobbies}</p>
-<p>${p.bio}</p>
+<p>Bio: ${p.bio}</p>
+<p>Interests: ${p.interests}</p>
 <button onclick="editProfile(${i})">Edit</button>`;
 c.appendChild(card);
 });
@@ -135,11 +133,10 @@ const p=profiles[i];
 const n=prompt("Edit Name:",p.name),
 a=prompt("Edit Age:",p.age),
 g=prompt("Edit Gender:",p.gender),
-m=prompt("Edit Major:",p.major),
-h=prompt("Edit Hobbies:",p.hobbies),
 b=prompt("Edit Bio:",p.bio),
+inters=prompt("Edit Interests:",p.interests),
 ph=prompt("Edit Photo URL:",p.photo);
-if(n&&a&&g&&m&&h&&b&&ph){profiles[i]={name:n,age:a,gender:g,major:m,hobbies:h,bio:b,photo:ph};renderProfiles()}
+if(n&&a&&g&&b&&inters&&ph){profiles[i]={name:n,age:a,gender:g,bio:b,interests:inters,photo:ph};renderProfiles()}
 }
 </script>
 
