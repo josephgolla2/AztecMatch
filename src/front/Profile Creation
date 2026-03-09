@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AztecMatch</title>
+
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#0a192f,#0b223f,#06142a);color:#fff}
+header{background:#0c1c33;padding:20px;text-align:center;font-size:26px;font-weight:bold;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
+.container{width:90%;max-width:1000px;margin:40px auto}
+
+/* PROFILE FORM WITH GRADIENT FADE */
+.profile-form{
+position:relative;
+background:linear-gradient(135deg,#0c1c33,#1b0d1d);
+border-radius:14px;
+padding:25px;
+box-shadow:0 10px 30px rgba(0,0,0,.4);
+margin-bottom:30px;
+overflow:hidden
+}
+
+/* glow fade effect */
+.profile-form::before{
+content:"";
+position:absolute;
+top:-50%;
+left:-50%;
+width:200%;
+height:200%;
+background:radial-gradient(circle,#ff5a5f55,transparent 60%);
+filter:blur(60px);
+z-index:0
+}
+
+.profile-form *{position:relative;z-index:1}
+
+.profile-form input,.profile-form textarea,.profile-form select{
+width:100%;padding:12px;margin-bottom:12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);
+background:#0e1c33;color:#fff;box-sizing:border-box
+}
+
+.profile-form input::placeholder,.profile-form textarea::placeholder{color:#9aa6c1}
+
+.profile-form button,.card button{
+padding:12px 20px;background:linear-gradient(90deg,#ff5a5f,#ff3b3f);
+color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;transition:.3s
+}
+
+.profile-form button:hover,.card button:hover{
+transform:scale(1.05);
+box-shadow:0 6px 18px rgba(255,90,95,.5)
+}
+
+.cards-container{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-top:30px}
+
+.card{
+width:250px;text-align:center;border-radius:14px;
+background:linear-gradient(135deg,#0c1c33,#1b0d1d);
+box-shadow:0 10px 25px rgba(0,0,0,.4);
+transition:.2s;padding-bottom:15px
+}
+
+.card:hover{transform:translateY(-5px)}
+
+.card img{width:100%;height:250px;object-fit:cover}
+.card h3{margin:10px 0 5px}
+.card p{margin:5px 10px;color:#c2c8d6;font-size:14px}
+</style>
+</head>
+
+<body>
+
+<header>AZTECMATCH ❤️</header>
+
+<div class="container">
+
+<div class="profile-form">
+<h2>Create Your AztecMatch Profile</h2>
+
+<input type="text" id="name" placeholder="Name">
+<input type="number" id="age" placeholder="Age">
+
+<select id="gender">
+<option value="" disabled selected>Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+
+<input type="text" id="major" placeholder="Major">
+<input type="text" id="hobbies" placeholder="Hobbies (comma separated)">
+<textarea id="bio" placeholder="Short bio"></textarea>
+<input type="url" id="photo" placeholder="Photo URL">
+
+<button onclick="addProfile()">Add Profile</button>
+</div>
+
+<div class="cards-container" id="cards-container"></div>
+
+</div>
+
+<script>
+let profiles=[];
+
+function addProfile(){
+const n=name.value,a=age.value,g=gender.value,m=major.value,h=hobbies.value,b=bio.value,p=photo.value;
+if(!n||!a||!g||!m||!h||!b||!p){alert("Please fill all fields");return;}
+profiles.push({name:n,age:a,gender:g,major:m,hobbies:h,bio:b,photo:p});
+renderProfiles();
+["name","age","gender","major","hobbies","bio","photo"].forEach(id=>document.getElementById(id).value="")
+}
+
+function renderProfiles(){
+const c=document.getElementById("cards-container");c.innerHTML="";
+profiles.forEach((p,i)=>{
+const card=document.createElement("div");
+card.className="card";
+card.innerHTML=`
+<img src="${p.photo}">
+<h3>${p.name}</h3>
+<p>Age: ${p.age}</p>
+<p>Gender: ${p.gender}</p>
+<p>Major: ${p.major}</p>
+<p>Hobbies: ${p.hobbies}</p>
+<p>${p.bio}</p>
+<button onclick="editProfile(${i})">Edit</button>`;
+c.appendChild(card);
+});
+}
+
+function editProfile(i){
+const p=profiles[i];
+const n=prompt("Edit Name:",p.name),
+a=prompt("Edit Age:",p.age),
+g=prompt("Edit Gender:",p.gender),
+m=prompt("Edit Major:",p.major),
+h=prompt("Edit Hobbies:",p.hobbies),
+b=prompt("Edit Bio:",p.bio),
+ph=prompt("Edit Photo URL:",p.photo);
+if(n&&a&&g&&m&&h&&b&&ph){profiles[i]={name:n,age:a,gender:g,major:m,hobbies:h,bio:b,photo:ph};renderProfiles()}
+}
+</script>
+
+</body>
+</html>
