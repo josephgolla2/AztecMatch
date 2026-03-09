@@ -1,8 +1,18 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# Enable CORS so the front-end can fetch
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    
 @app.get("/")
 def root():
     return {"message": "AztecMatch API is peak"}
@@ -29,6 +39,10 @@ class Profile(BaseModel):
     gender: str
     bio: str
     interests: str
+    photo: str 
+
+# In-memory storage for profiles
+profiles: List[Profile] = []
 
 @app.post("/profile")
 def create_profile(profile: Profile):
@@ -38,24 +52,5 @@ def create_profile(profile: Profile):
     }
 
 @app.get("/profile")
-def get_profile():
-    return {
-        "profiles": [
-            {
-                "name": "Edwin",
-                "age": 20,
-                "gender": "Male",
-                "bio": "Computer science student at San Diego State University.",
-                "interests": "jim"
-            },
-
-            {
-                "name": "Erik",
-                "age": 20,
-                "gender": "Female",
-                "bio": "Computer science student at San Diego State University.",
-                "interests": "jim"
-            }
-        ]
-    }
-
+def get_profiles():
+    return {"profiles": profiles}
