@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ..models.database import SessionLocal, User
+from models.database import SessionLocal, User
 
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api")
@@ -20,6 +20,9 @@ def register():
 
     if not email.endswith("@sdsu.edu"):
         return jsonify({"success": False, "error": "Email must end with @sdsu.edu."}), 400
+
+    if len(password) < 8:
+        return jsonify({"success": False, "error": "Password must be at least 8 characters."}), 400
 
     db = SessionLocal()
     try:
@@ -46,27 +49,29 @@ def register():
 
 @auth_bp.post("/login")
 def login():
-    data = request.get_json() or {}
-    email = (data.get("email") or "").strip().lower()
-    password = data.get("password") or ""
-
-    if not email or not password:
-        return jsonify({"success": False, "error": "Email and password are required."}), 400
-
-    db = SessionLocal()
     try:
-        user = db.query(User).filter_by(email=email).first()
-        if not user or not check_password_hash(user.password_hash, password):
-            return jsonify({"success": False, "error": "Invalid email or password."}), 401
+        data = request.get_json() or {}
+        email = (data.get("email") or "").strip().lower()
+        password = data.get("password") or ""
+        if not email or not password:
+            return jsonify({"success": False, "error": "Email and password are required."}), 400
 
-        return jsonify(
-            {
-                "success": True,
-                "user_id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-            }
-        )
-    finally:
-        db.close()
+        db = SessionLocal()
+        try:
+            user = db.query(User).filter_by(email=email).first()
+            if not user or not check_password_hash(user.password_hash, password):
+                return jsonify({"success": False, "error": "Invalid email or password."}), 401
+
+            return jsonify(
+                {
+                    "success": True,
+                    "user_id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                }
+            )
+        finally:
+            db.close()
+    except Exception:
+        return jsonify({"success": False, "error": "An error occurred during login."}), 500
 

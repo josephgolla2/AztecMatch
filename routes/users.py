@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from ..models.database import SessionLocal, User
+from models.database import SessionLocal, User
 
 
 users_bp = Blueprint("users", __name__, url_prefix="/api")

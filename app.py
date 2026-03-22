@@ -1,11 +1,11 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from .models.database import init_db
-from .routes.auth import auth_bp
-from .routes.users import users_bp
-from .routes.matches import matches_bp
-from .routes.messages import messages_bp
+from models.database import init_db
+from routes.auth import auth_bp
+from routes.users import users_bp
+from routes.matches import matches_bp
+from routes.messages import messages_bp
 
 
 def create_app() -> Flask:
