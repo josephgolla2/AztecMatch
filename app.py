@@ -1,5 +1,6 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+import os
 
 from models.database import init_db
 from routes.auth import auth_bp
@@ -7,9 +8,11 @@ from routes.users import users_bp
 from routes.matches import matches_bp
 from routes.messages import messages_bp
 
+FRONT_DIR = os.path.join(os.path.dirname(__file__), 'front')
+
 
 def create_app() -> Flask:
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static')
 
     # Enable CORS for all routes (frontend can be opened from file:// or another port)
     CORS(app)
@@ -26,6 +29,14 @@ def create_app() -> Flask:
     @app.get("/api/health")
     def health():
         return jsonify({"status": "ok"})
+
+    @app.route('/')
+    def index():
+        return send_from_directory(FRONT_DIR, 'index.html')
+
+    @app.route('/<path:filename>')
+    def serve_front(filename):
+        return send_from_directory(FRONT_DIR, filename)
 
     return app
 
