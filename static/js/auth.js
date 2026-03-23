@@ -61,6 +61,7 @@ async function handleLogin(event) {
       first_name: data.first_name,
       last_name: data.last_name,
       email,
+      profile_complete: Boolean(data.profile_complete),
     });
 
     window.location.href = "dashboard.html";

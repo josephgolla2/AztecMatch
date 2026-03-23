@@ -13,6 +13,7 @@ FRONT_DIR = os.path.join(os.path.dirname(__file__), 'front')
 
 def create_app() -> Flask:
     app = Flask(__name__, static_folder='static')
+    app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
 
     # Enable CORS for all routes (frontend can be opened from file:// or another port)
     CORS(app)

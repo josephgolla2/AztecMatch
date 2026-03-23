@@ -9,6 +9,8 @@ from sqlalchemy import (
     Text,
     Float,
     create_engine,
+    inspect,
+    text,
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
@@ -32,6 +34,11 @@ class User(Base):
     major = Column(String(255), nullable=True)
     interests = Column(Text, nullable=True)
     bio = Column(Text, nullable=True)
+    gender = Column(String(50), nullable=True)
+    age = Column(Integer, nullable=True)
+    height = Column(String(50), nullable=True)
+    status = Column(String(100), nullable=True)
+    profile_picture = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     sent_messages = relationship(
@@ -46,6 +53,16 @@ class User(Base):
         foreign_keys="Message.receiver_id",
         cascade="all, delete-orphan",
     )
+
+
+def user_profile_complete(user: User) -> bool:
+    if not user.gender or not user.height or not user.status:
+        return False
+    if user.age is None:
+        return False
+    if not user.profile_picture or not str(user.profile_picture).strip():
+        return False
+    return True
 
 
 class Match(Base):
@@ -76,4 +93,31 @@ class Message(Base):
 
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
+    _migrate_users_columns()
+
+
+def _migrate_users_columns() -> None:
+    insp = inspect(engine)
+    if "users" not in insp.get_table_names():
+        return
+
+    existing = {col["name"] for col in insp.get_columns("users")}
+    alters = []
+    if "gender" not in existing:
+        alters.append("ALTER TABLE users ADD COLUMN gender VARCHAR(50)")
+    if "age" not in existing:
+        alters.append("ALTER TABLE users ADD COLUMN age INTEGER")
+    if "height" not in existing:
+        alters.append("ALTER TABLE users ADD COLUMN height VARCHAR(50)")
+    if "status" not in existing:
+        alters.append("ALTER TABLE users ADD COLUMN status VARCHAR(100)")
+    if "profile_picture" not in existing:
+        alters.append("ALTER TABLE users ADD COLUMN profile_picture TEXT")
+
+    if not alters:
+        return
+
+    with engine.begin() as conn:
+        for statement in alters:
+            conn.execute(text(statement))
 

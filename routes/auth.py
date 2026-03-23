@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models.database import SessionLocal, User
+from models.database import SessionLocal, User, user_profile_complete
 
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api")
@@ -68,6 +68,7 @@ def login():
                     "user_id": user.id,
                     "first_name": user.first_name,
                     "last_name": user.last_name,
+                    "profile_complete": user_profile_complete(user),
                 }
             )
         finally:
