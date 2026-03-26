@@ -69,6 +69,7 @@ async function initCreateProfile() {
   if (!form || !errorEl) return;
 
   let userId = Number(user.id);
+  let existingProfilePicture = null; // Store existing picture for edits
 
   /* Attach handlers before any await — otherwise a fast "Save" triggers a real form GET and reloads the page with nothing saved. */
   form.addEventListener("submit", async (e) => {
@@ -117,6 +118,11 @@ async function initCreateProfile() {
       errorEl.textContent = "Age must be between 13 and 120.";
       errorEl.style.display = "block";
       return;
+    }
+
+    // Use existing profile picture if no new one was selected
+    if (!profile_picture && existingProfilePicture) {
+      profile_picture = existingProfilePicture;
     }
 
     if (!profile_picture) {
@@ -171,24 +177,51 @@ async function initCreateProfile() {
     });
   }
 
+  // Fetch existing profile and populate form for editing
   try {
     const res = await fetch(`${API_BASE}/profile/${userId}`);
     const data = await res.json();
-    if (res.ok && data.success && data.user && data.user.profile_complete) {
-      window.location.href = "profile.html";
+    if (res.ok && data.success && data.user) {
+      const u = data.user;
+      
+      // Store existing profile picture for potential reuse
+      if (u.profile_picture) {
+        existingProfilePicture = u.profile_picture;
+        preview.src = u.profile_picture;
+        preview.hidden = false;
+        const ph = document.getElementById("profile-photo-placeholder");
+        if (ph) ph.style.display = "none";
+      }
+      
+      // Populate form fields with existing data
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val != null && val !== "") el.value = val;
+      };
+      setVal("gender", u.gender);
+      setVal("age", u.age);
+      setVal("height", u.height);
+      setVal("status", u.status);
+      setVal("major", u.major);
+      setVal("interests", u.interests);
+      setVal("bio", u.bio);
+      
+      // Update heading and button text for edit mode
+      const heading = document.querySelector(".page-heading h1");
+      if (heading) heading.textContent = "Edit your profile";
+      const submitBtn = document.getElementById("profile-create-submit");
+      if (submitBtn) submitBtn.textContent = "Update Profile";
     }
   } catch {
-    /* stay on create form */
+    /* stay on create form with empty fields */
   }
 }
 
 async function initMyProfile() {
+  console.log("initMyProfile starting...");
   const user = getCurrentUser();
-  if (!user) {
-    console.error("No user logged in");
-    return;
-  }
-
+  console.log("Current user from localStorage:", user);
+  
   const viewEl = document.getElementById("profile-view");
   const formEl = document.getElementById("profile-edit-form");
   const errorEl = document.getElementById("profile-edit-error");
@@ -197,24 +230,39 @@ async function initMyProfile() {
   const preview = document.getElementById("profile-edit-photo-preview");
   const fileInput = document.getElementById("profile-edit-photo");
 
+  if (!user) {
+    console.error("No user logged in");
+    if (errorEl) {
+      errorEl.textContent = "You are not logged in. Please log in first.";
+      errorEl.style.display = "block";
+    }
+    if (viewEl) viewEl.style.display = "block";
+    if (formEl) formEl.style.display = "none";
+    return;
+  }
+
   if (!viewEl || !formEl) {
-    console.error("Required elements not found");
+    console.error("Required elements not found", { viewEl, formEl });
     return;
   }
 
   let loaded = null;
 
   try {
+    console.log("Fetching profile for user ID:", user.id);
     const res = await fetch(`${API_BASE}/profile/${user.id}`);
+    console.log("API response status:", res.status);
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`API error ${res.status}: ${text}`);
     }
     const data = await res.json();
+    console.log("API response data:", data);
     if (!data.success || !data.user) {
       throw new Error(data.error || "Could not load profile.");
     }
     loaded = data.user;
+    console.log("Loaded user data:", loaded);
   } catch (e) {
     console.error("Profile load error:", e);
     if (errorEl) {
@@ -279,6 +327,7 @@ async function initMyProfile() {
 
   fillView(loaded);
   fillForm(loaded);
+  console.log("fillView and fillForm completed");
 
   // always show the view section with data
   viewEl.style.display = "block";
@@ -430,6 +479,22 @@ async function initMyProfile() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("profile.js DOMContentLoaded fired");
+  console.log("Current URL:", window.location.href);
+  console.log("profile-create-form exists:", !!document.getElementById("profile-create-form"));
+  console.log("profile-edit-form exists:", !!document.getElementById("profile-edit-form"));
+  
+  // check if opened as file:// which won't work
+  if (window.location.protocol === "file:") {
+    const errorEl = document.getElementById("profile-edit-error") || document.getElementById("profile-create-error");
+    if (errorEl) {
+      errorEl.textContent = "ERROR: Open this page through http://localhost:8080/profile.html - not as a file!";
+      errorEl.style.display = "block";
+    }
+    alert("Please open this page through http://localhost:8080/profile.html");
+    return;
+  }
+  
   if (document.getElementById("profile-create-form")) {
     initCreateProfile();
   }

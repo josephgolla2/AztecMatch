@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AztecMatch – My Profile</title>
-    <link rel="stylesheet" href="../static/css/styles.css" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -136,7 +136,34 @@
       </main>
     </div>
 
-    <script src="../static/js/auth.js"></script>
-    <script src="../static/js/profile.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/profile.js"></script>
+    <script>
+      // load profile data
+      document.addEventListener("DOMContentLoaded", async () => {
+        const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+        if (user && user.id) {
+          try {
+            const res = await fetch("http://localhost:8080/api/profile/" + user.id);
+            const data = await res.json();
+            if (data.success && data.user) {
+              document.getElementById('pv-name').textContent = data.user.first_name + ' ' + data.user.last_name;
+              document.getElementById('pv-email').textContent = data.user.email || '—';
+              document.getElementById('pv-gender').textContent = data.user.gender || '—';
+              document.getElementById('pv-age').textContent = data.user.age || '—';
+              document.getElementById('pv-height').textContent = data.user.height || '—';
+              document.getElementById('pv-status').textContent = data.user.status || '—';
+              document.getElementById('pv-major').textContent = data.user.major || '—';
+              document.getElementById('pv-interests').textContent = data.user.interests || '—';
+              document.getElementById('pv-bio').textContent = data.user.bio || '—';
+              if (data.user.profile_picture) {
+                const img = document.getElementById('profile-view-photo');
+                if (img) { img.src = data.user.profile_picture; img.style.display = 'block'; }
+              }
+            }
+          } catch(e) { console.error("Error loading profile:", e); }
+        }
+      });
+    </script>
   </body>
 </html>
