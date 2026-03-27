@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 
-from models.database import SessionLocal, User
+from models.database import SessionLocal, User, user_profile_complete
 
 
 matches_bp = Blueprint("matches", __name__, url_prefix="/api")
@@ -20,9 +20,20 @@ def _parse_interests(interests_raw: str) -> set[str]:
 def get_matches(user_id: int):
     db = SessionLocal()
     try:
-        current = db.query(User).get(user_id)
+        current = db.get(User, user_id)
         if not current:
             return jsonify({"success": False, "error": "User not found."}), 404
+
+        if not user_profile_complete(current):
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Complete your profile to unlock matches.",
+                    }
+                ),
+                400,
+            )
 
         current_interests = _parse_interests(current.interests or "")
         current_major = (current.major or "").strip().lower()
@@ -31,6 +42,9 @@ def get_matches(user_id: int):
 
         suggestions = []
         for other in users:
+            if not user_profile_complete(other):
+                continue
+
             score = 0
 
             other_major = (other.major or "").strip().lower()
@@ -48,7 +62,16 @@ def get_matches(user_id: int):
                 {
                     "id": other.id,
                     "name": f"{other.first_name} {other.last_name}",
+                    "first_name": other.first_name,
+                    "last_name": other.last_name,
                     "major": other.major,
+                    "interests": other.interests,
+                    "bio": other.bio,
+                    "profile_picture": other.profile_picture,
+                    "shared_interests": sorted(shared),
+                    "same_major": bool(
+                        current_major and other_major and current_major == other_major
+                    ),
                     "score": score,
                 }
             )

@@ -24,25 +24,69 @@
       <main class="page">
         <section class="page-heading">
           <h1 id="dashboard-title">Welcome to AztecMatch.</h1>
-          <p>This is the dashboard page for now. We plan to show matches and messages here.</p>
+          <p>Find SDSU students with similar interests and start a conversation right here.</p>
         </section>
 
         <section class="card">
           <div class="card-header">
-            <div class="card-title">You are logged in</div>
+            <div class="card-title">Discover people to connect with</div>
             <div class="pill">
               <span class="pill-dot"></span>
-              <span>Prototype dashboard</span>
+              <span>Shared-interest matches</span>
             </div>
           </div>
-          <p class="helper-text">
-            You can use this page to test logging in and out while we keep building
-            the rest of the app.
-          </p>
+
+          <p id="dashboard-error" class="error-text" style="display: none"></p>
+
+          <div class="dashboard-layout">
+            <section class="dashboard-panel">
+              <div class="dashboard-section-head">
+                <h2 class="dashboard-section-title">Recommended people</h2>
+                <p class="helper-text">Based on shared interests and majors.</p>
+              </div>
+              <div id="matches-list" class="matches-list"></div>
+            </section>
+
+            <section class="dashboard-panel">
+              <div id="chat-empty-state" class="empty-state">
+                Select a match to view their profile details and start messaging.
+              </div>
+
+              <div id="chat-panel" class="chat-panel" style="display: none">
+                <div class="chat-profile-card">
+                  <img id="chat-profile-photo" class="chat-profile-photo" alt="Match profile photo" />
+                  <div class="chat-profile-copy">
+                    <div class="chat-profile-topline">
+                      <h2 id="chat-match-name" class="chat-match-name">-</h2>
+                      <span id="chat-match-score" class="match-score">0 pts</span>
+                    </div>
+                    <p id="chat-match-major" class="match-major">-</p>
+                    <p id="chat-match-bio" class="helper-text">-</p>
+                    <div id="chat-match-shared" class="shared-tags"></div>
+                  </div>
+                </div>
+
+                <div class="chat-container">
+                  <div id="chat-messages" class="chat-messages"></div>
+                  <form id="chat-form" class="chat-input-row">
+                    <input
+                      id="chat-input"
+                      type="text"
+                      maxlength="500"
+                      placeholder="Send a message..."
+                      autocomplete="off"
+                    />
+                    <button id="chat-send-btn" type="submit" class="btn">Send</button>
+                  </form>
+                </div>
+              </div>
+            </section>
+          </div>
         </section>
       </main>
     </div>
 
     <script src="/static/js/auth.js"></script>
+    <script src="/static/js/dashboard.js"></script>
   </body>
 </html>
