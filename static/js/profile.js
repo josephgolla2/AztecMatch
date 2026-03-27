@@ -240,60 +240,43 @@ async function initCreateProfile() {
 }
 
 async function initMyProfile() {
-  console.log("initMyProfile starting...");
   const user = getCurrentUser();
-  console.log("Current user from localStorage:", user);
-  
   const viewEl = document.getElementById("profile-view");
-  const formEl = document.getElementById("profile-edit-form");
   const errorEl = document.getElementById("profile-edit-error");
   const editBtn = document.getElementById("profile-edit-btn");
-  const cancelBtn = document.getElementById("profile-cancel-btn");
-  const preview = document.getElementById("profile-edit-photo-preview");
-  const fileInput = document.getElementById("profile-edit-photo");
 
   if (!user) {
-    console.error("No user logged in");
     if (errorEl) {
       errorEl.textContent = "You are not logged in. Please log in first.";
       errorEl.style.display = "block";
     }
     if (viewEl) viewEl.style.display = "block";
-    if (formEl) formEl.style.display = "none";
     return;
   }
 
-  if (!viewEl || !formEl) {
-    console.error("Required elements not found", { viewEl, formEl });
+  if (!viewEl) {
     return;
   }
 
   let loaded = null;
 
   try {
-    console.log("Fetching profile for user ID:", user.id);
     const res = await fetch(`${PROFILE_API_BASE}/profile/${user.id}`);
-    console.log("API response status:", res.status);
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`API error ${res.status}: ${text}`);
     }
     const data = await res.json();
-    console.log("API response data:", data);
     if (!data.success || !data.user) {
       throw new Error(data.error || "Could not load profile.");
     }
     loaded = data.user;
-    console.log("Loaded user data:", loaded);
   } catch (e) {
-    console.error("Profile load error:", e);
     if (errorEl) {
       errorEl.textContent = e.message || "Could not load profile. Make sure the server is running.";
       errorEl.style.display = "block";
     }
-    // still show the view section with whatever data we have
     viewEl.style.display = "block";
-    formEl.style.display = "none";
     return;
   }
 
@@ -323,190 +306,17 @@ async function initMyProfile() {
     setText("pv-bio", u.bio);
   }
 
-  function fillForm(u) {
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.value = val != null ? val : "";
-    };
-    setVal("edit-gender", u.gender);
-    setVal("edit-age", u.age);
-    setVal("edit-height", u.height);
-    setVal("edit-status", u.status);
-    setVal("edit-major", u.major);
-    setVal("edit-interests", u.interests);
-    setVal("edit-bio", u.bio);
-    if (preview) {
-      if (u.profile_picture) {
-        preview.src = u.profile_picture;
-        preview.style.display = "block";
-      } else {
-        preview.removeAttribute("src");
-        preview.style.display = "none";
-      }
-    }
-    if (fileInput) fileInput.value = "";
-  }
-
   fillView(loaded);
-  fillForm(loaded);
-  console.log("fillView and fillForm completed");
-
-  // always show the view section with data
   viewEl.style.display = "block";
-  
-  // if profile is incomplete, also show the edit form below
-  if (loaded.profile_complete) {
-    formEl.style.display = "none";
-  } else {
-    formEl.style.display = "flex";
-    if (editBtn) editBtn.style.display = "none";
-  }
-
-  if (fileInput && preview) {
-    fileInput.addEventListener("change", async () => {
-      if (errorEl) {
-        errorEl.style.display = "none";
-        errorEl.textContent = "";
-      }
-      try {
-        const url = await readPictureInput(fileInput);
-        if (url) {
-          preview.src = url;
-          preview.style.display = "block";
-        }
-      } catch (e) {
-        if (errorEl) {
-          errorEl.textContent = e.message || "Invalid image.";
-          errorEl.style.display = "block";
-        }
-        fileInput.value = "";
-      }
-    });
-  }
 
   if (editBtn) {
     editBtn.addEventListener("click", () => {
-      fillForm(loaded);
-      viewEl.style.display = "none";
-      formEl.style.display = "flex";
+      window.location.href = "create-profile.html";
     });
   }
-
-  if (cancelBtn) {
-    cancelBtn.addEventListener("click", () => {
-      if (!loaded.profile_complete) {
-        window.location.href = "dashboard.html";
-        return;
-      }
-      if (errorEl) {
-        errorEl.style.display = "none";
-        errorEl.textContent = "";
-      }
-      fillForm(loaded);
-      viewEl.style.display = "block";
-      formEl.style.display = "none";
-    });
-  }
-
-  formEl.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (errorEl) {
-      errorEl.style.display = "none";
-      errorEl.textContent = "";
-    }
-
-    const gender = (document.getElementById("edit-gender") || {}).value;
-    const ageRaw = (document.getElementById("edit-age") || {}).value;
-    const height = ((document.getElementById("edit-height") || {}).value || "").trim();
-    const status = (document.getElementById("edit-status") || {}).value;
-    const major = ((document.getElementById("edit-major") || {}).value || "").trim();
-    const interests = ((document.getElementById("edit-interests") || {}).value || "").trim();
-    const bio = ((document.getElementById("edit-bio") || {}).value || "").trim();
-
-    let profile_picture = loaded.profile_picture;
-    try {
-      const newPic = await readPictureInput(fileInput);
-      if (newPic) profile_picture = newPic;
-    } catch (err) {
-      if (errorEl) {
-        errorEl.textContent = err.message || "Invalid image.";
-        errorEl.style.display = "block";
-      }
-      return;
-    }
-
-    if (!gender || !height || !status) {
-      if (errorEl) {
-        errorEl.textContent = "Gender, height, and status are required.";
-        errorEl.style.display = "block";
-      }
-      return;
-    }
-
-    if (!ageRaw) {
-      if (errorEl) {
-        errorEl.textContent = "Please enter your age.";
-        errorEl.style.display = "block";
-      }
-      return;
-    }
-
-    const age = parseInt(ageRaw, 10);
-    if (Number.isNaN(age) || age < 13 || age > 120) {
-      if (errorEl) {
-        errorEl.textContent = "Age must be between 13 and 120.";
-        errorEl.style.display = "block";
-      }
-      return;
-    }
-
-    if (!profile_picture) {
-      if (errorEl) {
-        errorEl.textContent = "Please add a profile picture.";
-        errorEl.style.display = "block";
-      }
-      return;
-    }
-
-    const submitBtn = document.getElementById("profile-save-btn");
-    if (submitBtn) submitBtn.disabled = true;
-
-    try {
-      const data = await saveProfilePayload({
-        user_id: user.id,
-        gender,
-        age,
-        height,
-        status,
-        major: major || null,
-        interests: interests || null,
-        bio: bio || null,
-        profile_picture,
-      });
-      loaded = data.user;
-      fillView(loaded);
-      fillForm(loaded);
-      viewEl.style.display = "block";
-      formEl.style.display = "none";
-      if (editBtn) editBtn.style.display = "inline-flex";
-    } catch (err) {
-      if (errorEl) {
-        errorEl.textContent = err.message || "Could not save.";
-        errorEl.style.display = "block";
-      }
-    } finally {
-      if (submitBtn) submitBtn.disabled = false;
-    }
-  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("profile.js DOMContentLoaded fired");
-  console.log("Current URL:", window.location.href);
-  console.log("profile-create-form exists:", !!document.getElementById("profile-create-form"));
-  console.log("profile-edit-form exists:", !!document.getElementById("profile-edit-form"));
-  
-  // check if opened as file:// which won't work
   if (window.location.protocol === "file:") {
     const errorEl = document.getElementById("profile-edit-error") || document.getElementById("profile-create-error");
     if (errorEl) {
@@ -516,11 +326,11 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Please open this page through http://localhost:8080/profile.html");
     return;
   }
-  
+
   if (document.getElementById("profile-create-form")) {
     initCreateProfile();
   }
-  if (document.getElementById("profile-edit-form")) {
+  if (document.getElementById("profile-view")) {
     initMyProfile();
   }
 });
