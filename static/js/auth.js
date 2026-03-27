@@ -160,7 +160,6 @@ function initAuthUI() {
   const dashboardTitle = document.getElementById("dashboard-title");
 
   const user = getCurrentUser();
-
   const isAuthPage = !!loginForm || !!registerForm;
 
   if (!user && !isAuthPage) {
@@ -186,4 +185,3 @@ function initAuthUI() {
 }
 
 document.addEventListener("DOMContentLoaded", initAuthUI);
-

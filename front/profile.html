@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AztecMatch – My Profile</title>
+    <title>AztecMatch - My Profile</title>
     <link rel="stylesheet" href="/static/css/styles.css" />
   </head>
   <body>
@@ -11,7 +11,7 @@
       <header class="navbar">
         <div class="navbar-title">
           AZTECMATCH
-          <span class="navbar-heart">♥</span>
+          <span class="navbar-heart">&hearts;</span>
         </div>
         <nav class="navbar-links">
           <a href="dashboard.html">Dashboard</a>
@@ -24,7 +24,7 @@
       <main class="page">
         <section class="page-heading">
           <h1>My Profile</h1>
-          <p>View and edit your saved profile information.</p>
+          <p>View and update the information saved on your profile.</p>
         </section>
 
         <p id="profile-edit-error" class="error-text" style="display: none"></p>
@@ -81,8 +81,8 @@
                 <label for="edit-gender">Gender</label>
                 <select id="edit-gender" required>
                   <option value="">Select...</option>
-                  <option value="Woman">Woman</option>
-                  <option value="Man">Man</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
                   <option value="Non-binary">Non-binary</option>
                   <option value="Prefer not to say">Prefer not to say</option>
                   <option value="Other">Other</option>
@@ -138,32 +138,5 @@
 
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/profile.js"></script>
-    <script>
-      // load profile data
-      document.addEventListener("DOMContentLoaded", async () => {
-        const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-        if (user && user.id) {
-          try {
-            const res = await fetch("http://localhost:8080/api/profile/" + user.id);
-            const data = await res.json();
-            if (data.success && data.user) {
-              document.getElementById('pv-name').textContent = data.user.first_name + ' ' + data.user.last_name;
-              document.getElementById('pv-email').textContent = data.user.email || '—';
-              document.getElementById('pv-gender').textContent = data.user.gender || '—';
-              document.getElementById('pv-age').textContent = data.user.age || '—';
-              document.getElementById('pv-height').textContent = data.user.height || '—';
-              document.getElementById('pv-status').textContent = data.user.status || '—';
-              document.getElementById('pv-major').textContent = data.user.major || '—';
-              document.getElementById('pv-interests').textContent = data.user.interests || '—';
-              document.getElementById('pv-bio').textContent = data.user.bio || '—';
-              if (data.user.profile_picture) {
-                const img = document.getElementById('profile-view-photo');
-                if (img) { img.src = data.user.profile_picture; img.style.display = 'block'; }
-              }
-            }
-          } catch(e) { console.error("Error loading profile:", e); }
-        }
-      });
-    </script>
   </body>
 </html>

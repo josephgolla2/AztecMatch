@@ -28,7 +28,7 @@ def _user_payload(user: User) -> dict:
 def get_profile(user_id: int):
     db = SessionLocal()
     try:
-        user = db.query(User).get(user_id)
+        user = db.get(User, user_id)
         if not user:
             return jsonify({"success": False, "error": "User not found."}), 404
 
@@ -51,7 +51,7 @@ def update_profile():
 
     db = SessionLocal()
     try:
-        user = db.query(User).get(int(user_id))
+        user = db.get(User, int(user_id))
         if not user:
             return jsonify({"success": False, "error": "User not found."}), 404
 

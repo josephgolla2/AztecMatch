@@ -15,13 +15,10 @@ def create_app() -> Flask:
     app = Flask(__name__, static_folder='static')
     app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
 
-    # Enable CORS for all routes (frontend can be opened from file:// or another port)
     CORS(app)
 
-    # Initialize database
     init_db()
 
-    # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(matches_bp)
