@@ -1,8 +1,10 @@
 import uuid
+import time
 
 
 def unique_sdsu_email(prefix="testauth"):
-    return f"{prefix}_{uuid.uuid4().hex[:8]}@sdsu.edu"
+    timestamp = int(time.time() * 1000000)
+    return f"{prefix}_{uuid.uuid4().hex[:12]}_{timestamp}@sdsu.edu"
 
 
 def test_register_rejects_non_sdsu_email(client):

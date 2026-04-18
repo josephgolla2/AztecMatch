@@ -1,8 +1,10 @@
 import uuid
+import time
 
 
 def create_test_user(client):
-    unique_email = f"test_{uuid.uuid4().hex[:8]}@sdsu.edu"
+    timestamp = int(time.time() * 1000000)
+    unique_email = f"test_{uuid.uuid4().hex[:12]}_{timestamp}@sdsu.edu"
     response = client.post(
         "/api/register",
         json={
@@ -47,7 +49,7 @@ def test_update_profile_rejects_invalid_age(client):
         "/api/profile/update",
         json={
             "user_id": user_id,
-            "age": 121
+            "age": 61
         }
     )
 

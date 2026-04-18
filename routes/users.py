@@ -79,8 +79,8 @@ def update_profile():
                     age = int(raw_age)
                 except (TypeError, ValueError):
                     return jsonify({"success": False, "error": "Age must be a number."}), 400
-                if age < 13 or age > 120:
-                    return jsonify({"success": False, "error": "Age must be between 13 and 120."}), 400
+                if age < 16 or age > 60:
+                    return jsonify({"success": False, "error": "Age must be between 16 and 60."}), 400
                 user.age = age
 
         db.add(user)

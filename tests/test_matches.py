@@ -1,8 +1,10 @@
 import uuid
+import time
 
 
 def register_user(client, first_name, last_name):
-    unique_email = f"{first_name.lower()}_{uuid.uuid4().hex[:8]}@sdsu.edu"
+    timestamp = int(time.time() * 1000000)
+    unique_email = f"{first_name.lower()}_{uuid.uuid4().hex[:12]}_{timestamp}@sdsu.edu"
     response = client.post(
         "/api/register",
         json={
@@ -17,7 +19,8 @@ def register_user(client, first_name, last_name):
 
 
 def create_test_user(client):
-    unique_email = f"test_{uuid.uuid4().hex[:8]}@sdsu.edu"
+    timestamp = int(time.time() * 1000000)
+    unique_email = f"test_{uuid.uuid4().hex[:12]}_{timestamp}@sdsu.edu"
     response = client.post(
         "/api/register",
         json={
