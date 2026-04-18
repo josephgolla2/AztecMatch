@@ -69,6 +69,80 @@ def test_matches_returns_candidates_for_completed_profiles(client):
     assert len(data["matches"]) >= 1
 
 
+def test_matches_same_major_without_shared_interests(client):
+    user1 = register_user(client, "Major", "One")
+    user2 = register_user(client, "Major", "Two")
+
+    complete_profile(client, user1, "music, hiking", major="Computer Science")
+    complete_profile(client, user2, "cooking, chess", major="Computer Science")
+
+    response = client.get(f"/api/matches/{user1}")
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert data["success"] is True
+    assert len(data["matches"]) >= 1
+
+    matched_ids = [match["id"] for match in data["matches"]]
+    assert user2 in matched_ids
+
+
+def test_matches_shared_interests_without_same_major(client):
+    user1 = register_user(client, "Interest", "One")
+    user2 = register_user(client, "Interest", "Two")
+
+    complete_profile(client, user1, "music, coding", major="Computer Science")
+    complete_profile(client, user2, "music, coding", major="Mathematics")
+
+    response = client.get(f"/api/matches/{user1}")
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert data["success"] is True
+    assert len(data["matches"]) >= 1
+
+    matched_ids = [match["id"] for match in data["matches"]]
+    assert user2 in matched_ids
+
+
+def test_matches_excludes_users_with_no_major_or_interest_overlap(client):
+    user1 = register_user(client, "NoMatch", "One")
+    user2 = register_user(client, "NoMatch", "Two")
+
+    complete_profile(client, user1, "music, coding", major="Computer Science")
+    complete_profile(client, user2, "cooking, chess", major="Biology")
+
+    response = client.get(f"/api/matches/{user1}")
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert data["success"] is True
+
+    matched_ids = [match["id"] for match in data["matches"]]
+    assert user2 not in matched_ids
+
+
+def test_matches_combined_major_and_shared_interests_have_positive_score(client):
+    user1 = register_user(client, "Combo", "One")
+    user2 = register_user(client, "Combo", "Two")
+
+    complete_profile(client, user1, "music, coding, hiking", major="Computer Science")
+    complete_profile(client, user2, "music, coding, movies", major="Computer Science")
+
+    response = client.get(f"/api/matches/{user1}")
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert data["success"] is True
+    assert len(data["matches"]) >= 1
+
+    target_match = next((m for m in data["matches"] if m["id"] == user2), None)
+    assert target_match is not None
+    assert target_match["same_major"] is True
+    assert set(target_match["shared_interests"]) == {"music", "coding"}
+    assert target_match["score"] == 50
+
+
 def test_matches_for_incomplete_profile_behaves_correctly(client):
     user_id = create_test_user(client)
 
