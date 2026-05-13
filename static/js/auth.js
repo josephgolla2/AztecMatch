@@ -14,6 +14,16 @@ function saveCurrentUser(user) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
 }
 
+/** JSON requests with Bearer token when the user has logged in with JWT. */
+function authHeaders() {
+  const user = getCurrentUser();
+  const headers = { "Content-Type": "application/json" };
+  if (user?.access_token) {
+    headers.Authorization = `Bearer ${user.access_token}`;
+  }
+  return headers;
+}
+
 function clearCurrentUser() {
   localStorage.removeItem(STORAGE_KEY);
 }
@@ -62,6 +72,7 @@ async function handleLogin(event) {
       last_name: data.last_name,
       email,
       profile_complete: Boolean(data.profile_complete),
+      access_token: data.access_token,
     });
 
     window.location.href = "dashboard.html";
@@ -161,6 +172,12 @@ function initAuthUI() {
 
   const user = getCurrentUser();
   const isAuthPage = !!loginForm || !!registerForm;
+
+  if (user && !user.access_token && !isAuthPage) {
+    clearCurrentUser();
+    window.location.href = "index.html";
+    return;
+  }
 
   if (!user && !isAuthPage) {
     window.location.href = "index.html";

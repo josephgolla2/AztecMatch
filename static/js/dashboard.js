@@ -193,9 +193,9 @@ async function loadConversation(otherUserId) {
     container.innerHTML = `<div class="empty-state">Loading conversation...</div>`;
   }
 
-  const res = await fetch(
-    `${DASHBOARD_API_BASE}/messages/${otherUserId}?user_id=${dashboardState.currentUser.id}`
-  );
+  const res = await fetch(`${DASHBOARD_API_BASE}/messages/${otherUserId}`, {
+    headers: authHeaders(),
+  });
   const data = await res.json();
 
   if (!res.ok || !data.success) {
@@ -220,7 +220,9 @@ async function selectMatch(match) {
 }
 
 async function loadMatches() {
-  const res = await fetch(`${DASHBOARD_API_BASE}/matches/${dashboardState.currentUser.id}`);
+  const res = await fetch(`${DASHBOARD_API_BASE}/matches`, {
+    headers: authHeaders(),
+  });
   const data = await res.json();
 
   if (!res.ok || !data.success) {
@@ -260,9 +262,8 @@ async function handleSendMessage(event) {
   try {
     const res = await fetch(`${DASHBOARD_API_BASE}/messages/send`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),
       body: JSON.stringify({
-        sender_id: dashboardState.currentUser.id,
         receiver_id: dashboardState.selectedMatch.id,
         message,
       }),

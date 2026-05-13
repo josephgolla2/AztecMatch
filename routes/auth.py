@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from auth_utils import create_access_token
 from models.database import SessionLocal, User, user_profile_complete
 
 
@@ -62,10 +63,12 @@ def login():
             if not user or not check_password_hash(user.password_hash, password):
                 return jsonify({"success": False, "error": "Invalid email or password."}), 401
 
+            access_token = create_access_token(user.id)
             return jsonify(
                 {
                     "success": True,
                     "user_id": user.id,
+                    "access_token": access_token,
                     "first_name": user.first_name,
                     "last_name": user.last_name,
                     "profile_complete": user_profile_complete(user),

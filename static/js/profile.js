@@ -36,7 +36,7 @@ async function readPictureInput(inputEl) {
 async function saveProfilePayload(payload) {
   const res = await fetch(`${PROFILE_API_BASE}/profile/update`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
   const text = await res.text();
@@ -156,7 +156,6 @@ async function initCreateProfile() {
 
     try {
       const result = await saveProfilePayload({
-        user_id: userId,
         gender,
         age,
         height,
@@ -201,7 +200,9 @@ async function initCreateProfile() {
 
   // Fetch existing profile and populate form for editing
   try {
-    const res = await fetch(`${PROFILE_API_BASE}/profile/${userId}`);
+    const res = await fetch(`${PROFILE_API_BASE}/profile/${userId}`, {
+      headers: authHeaders(),
+    });
     const data = await res.json();
     if (res.ok && data.success && data.user) {
       const u = data.user;
@@ -261,7 +262,9 @@ async function initMyProfile() {
   let loaded = null;
 
   try {
-    const res = await fetch(`${PROFILE_API_BASE}/profile/${user.id}`);
+    const res = await fetch(`${PROFILE_API_BASE}/profile/${user.id}`, {
+      headers: authHeaders(),
+    });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`API error ${res.status}: ${text}`);
