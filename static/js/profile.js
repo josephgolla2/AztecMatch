@@ -60,7 +60,7 @@ async function saveProfilePayload(payload) {
 async function initCreateProfile() {
   const user = getCurrentUser();
   const errorEl = document.getElementById("profile-create-error");
-  
+
   if (!user) {
     if (errorEl) {
       errorEl.textContent = "You must be logged in to create a profile. Please log in first.";
@@ -94,7 +94,11 @@ async function initCreateProfile() {
 
     const gender = (document.getElementById("gender") || {}).value;
     const ageRaw = (document.getElementById("age") || {}).value;
-    const height = ((document.getElementById("height") || {}).value || "").trim();
+    const feetEl = document.getElementById("height-feet");
+    const inchesEl = document.getElementById("height-inches");
+    const feetVal = feetEl ? feetEl.value.trim() : "";
+    const inchesVal = inchesEl ? inchesEl.value.trim() : "";
+    const height = feetVal && inchesVal !== "" ? `${feetVal}'${inchesVal}"` : "";
     const status = (document.getElementById("status") || {}).value;
     const major = ((document.getElementById("major") || {}).value || "").trim();
     const interests = ((document.getElementById("interests") || {}).value || "").trim();
@@ -205,7 +209,7 @@ async function initCreateProfile() {
     const data = await res.json();
     if (res.ok && data.success && data.user) {
       const u = data.user;
-      
+
       // Store existing profile picture for potential reuse
       if (u.profile_picture) {
         existingProfilePicture = u.profile_picture;
@@ -214,7 +218,7 @@ async function initCreateProfile() {
         const ph = document.getElementById("profile-photo-placeholder");
         if (ph) ph.style.display = "none";
       }
-      
+
       // Populate form fields with existing data
       const setVal = (id, val) => {
         const el = document.getElementById(id);
@@ -227,7 +231,7 @@ async function initCreateProfile() {
       setVal("major", u.major);
       setVal("interests", u.interests);
       setVal("bio", u.bio);
-      
+
       // Update heading and button text for edit mode
       const heading = document.querySelector(".page-heading h1");
       if (heading) heading.textContent = "Edit your profile";
