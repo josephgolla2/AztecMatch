@@ -206,7 +206,39 @@ async function initCreateProfile() {
       }
     });
   }
+  // Enforce digits-only on height inputs
+  ["height-feet", "height-inches"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      el.value = el.value.replace(/\D/g, "");
+    });
+    el.addEventListener("keydown", (e) => {
+      const allowed = ["Backspace", "Delete", "Tab", "ArrowLeft", "ArrowRight", "Home", "End"];
+      if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+  });
 
+  // Second major toggle
+  const addMajorBtn = document.getElementById("add-second-major");
+  const secondMajorRow = document.getElementById("second-major-row");
+  const removeMajorBtn = document.getElementById("remove-second-major");
+  if (addMajorBtn && secondMajorRow) {
+    addMajorBtn.addEventListener("click", () => {
+      secondMajorRow.style.display = "block";
+      addMajorBtn.style.display = "none";
+    });
+  }
+  if (removeMajorBtn && secondMajorRow) {
+    removeMajorBtn.addEventListener("click", () => {
+      secondMajorRow.style.display = "none";
+      const m2 = document.getElementById("major2");
+      if (m2) m2.value = "";
+      if (addMajorBtn) addMajorBtn.style.display = "";
+    });
+  }
   // Fetch existing profile and populate form for editing
   try {
     const res = await fetch(`${PROFILE_API_BASE}/profile/${userId}`);
