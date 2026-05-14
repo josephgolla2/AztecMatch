@@ -1,22 +1,23 @@
 import os
+import os
 import tempfile
-
 import pytest
-
 from app import create_app
+from models.database import init_db
+
+# Configure before any application imports so SQLAlchemy binds to the test database.
+os.environ["AZTECMATCH_DATABASE_URL"] = "sqlite:///:memory:"
+os.environ["JWT_SECRET_KEY"] = "test-jwt-secret"
 
 
 @pytest.fixture
-def client():
-    db_fd, db_path = tempfile.mkstemp(suffix=".db")
+def app():
+    application = create_app()
+    application.config["TESTING"] = True
+    init_db()
+    yield application
 
-    # If your app later supports a test DB config, wire it here.
-    # For now, this fixture mainly gives you a reusable test client.
-    app = create_app()
-    app.config["TESTING"] = True
 
-    with app.test_client() as client:
-        yield client
-
-    os.close(db_fd)
-    os.unlink(db_path)
+@pytest.fixture
+def client(app):
+    return app.test_client()

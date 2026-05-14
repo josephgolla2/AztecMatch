@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, g, jsonify
 
+from auth_utils import require_auth
 from models.database import SessionLocal, User, user_profile_complete
 
 
@@ -16,8 +17,10 @@ def _parse_interests(interests_raw: str) -> set[str]:
     }
 
 
-@matches_bp.get("/matches/<int:user_id>")
-def get_matches(user_id: int):
+@matches_bp.get("/matches")
+@require_auth
+def get_matches():
+    user_id = g.current_user_id
     db = SessionLocal()
     try:
         current = db.get(User, user_id)

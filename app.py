@@ -1,6 +1,7 @@
+import os
+
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
-import os
 
 from models.database import init_db
 from routes.auth import auth_bp
@@ -14,6 +15,9 @@ FRONT_DIR = os.path.join(os.path.dirname(__file__), 'front')
 def create_app() -> Flask:
     app = Flask(__name__, static_folder='static')
     app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
+    app.config["JWT_SECRET_KEY"] = os.environ.get(
+        "JWT_SECRET_KEY", "dev-only-change-in-production"
+    )
 
     CORS(app)
 

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 
 from sqlalchemy import (
@@ -13,11 +14,26 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 
-DATABASE_URL = "sqlite:///aztecmatch.db"
+DATABASE_URL = os.environ.get("AZTECMATCH_DATABASE_URL", "sqlite:///aztecmatch.db")
 
-engine = create_engine(DATABASE_URL, echo=False, future=True)
+
+def _create_engine():
+    url = DATABASE_URL
+    if url.startswith("sqlite") and ":memory:" in url:
+        return create_engine(
+            url,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+            echo=False,
+            future=True,
+        )
+    return create_engine(url, echo=False, future=True)
+
+
+engine = _create_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

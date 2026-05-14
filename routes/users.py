@@ -1,17 +1,17 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
+from auth_utils import require_auth
 from models.database import SessionLocal, User, user_profile_complete
 
 
 users_bp = Blueprint("users", __name__, url_prefix="/api")
 
 
-def _user_payload(user: User) -> dict:
-    return {
+def _user_payload(user: User, *, include_email: bool) -> dict:
+    payload = {
         "id": user.id,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "email": user.email,
         "major": user.major,
         "interests": user.interests,
         "bio": user.bio,
@@ -22,9 +22,13 @@ def _user_payload(user: User) -> dict:
         "profile_picture": user.profile_picture,
         "profile_complete": user_profile_complete(user),
     }
+    if include_email:
+        payload["email"] = user.email
+    return payload
 
 
 @users_bp.get("/profile/<int:user_id>")
+@require_auth
 def get_profile(user_id: int):
     db = SessionLocal()
     try:
@@ -32,10 +36,13 @@ def get_profile(user_id: int):
         if not user:
             return jsonify({"success": False, "error": "User not found."}), 404
 
+        viewer_id = g.current_user_id
+        include_email = viewer_id == user.id
+
         return jsonify(
             {
                 "success": True,
-                "user": _user_payload(user),
+                "user": _user_payload(user, include_email=include_email),
             }
         )
     finally:
@@ -43,15 +50,13 @@ def get_profile(user_id: int):
 
 
 @users_bp.post("/profile/update")
+@require_auth
 def update_profile():
     data = request.get_json() or {}
-    user_id = data.get("user_id")
-    if not user_id:
-        return jsonify({"success": False, "error": "user_id is required."}), 400
 
     db = SessionLocal()
     try:
-        user = db.get(User, int(user_id))
+        user = db.get(User, g.current_user_id)
         if not user:
             return jsonify({"success": False, "error": "User not found."}), 404
 
@@ -87,7 +92,7 @@ def update_profile():
         db.commit()
         db.refresh(user)
 
-        return jsonify({"success": True, "user": _user_payload(user)})
+        return jsonify({"success": True, "user": _user_payload(user, include_email=True)})
     finally:
         db.close()
 
