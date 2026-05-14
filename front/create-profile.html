@@ -66,9 +66,13 @@
 
             <div class="form-row">
               <label for="height">Height</label>
-              <input id="height" type="text" placeholder="e.g. 5'10 or 178 cm" required />
+              <div class="height-inputs" style="display:flex;align-items:center;gap:8px;">
+            <input id="height-feet" type="text" inputmode="numeric" maxlength="1" placeholder="5" style="width:60px;text-align:center;" required />
+              <span>'</span>
+                <input id="height-inches" type="text" inputmode="numeric" maxlength="2" placeholder="10" style="width:60px;text-align:center;" required />
+              <span>"</span>
+              </div>
             </div>
-
             <div class="form-row">
               <label for="status">Status</label>
               <select id="status" required>
