@@ -100,7 +100,11 @@ async function initCreateProfile() {
     const inchesVal = inchesEl ? inchesEl.value.trim() : "";
     const height = feetVal && inchesVal !== "" ? `${feetVal}'${inchesVal}"` : "";
     const status = (document.getElementById("status") || {}).value;
-    const major = ((document.getElementById("major") || {}).value || "").trim();
+    const majorVal = ((document.getElementById("major") || {}).value || "").trim();
+    const major2Val = ((document.getElementById("major2") || {}).value || "").trim();
+    const major = majorVal
+      ? (major2Val && major2Val !== majorVal ? `${majorVal} / ${major2Val}` : majorVal)
+      : null;
     const interests = ((document.getElementById("interests") || {}).value || "").trim();
     const bio = ((document.getElementById("bio") || {}).value || "").trim();
 
