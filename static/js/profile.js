@@ -262,9 +262,27 @@ async function initCreateProfile() {
       };
       setVal("gender", u.gender);
       setVal("age", u.age);
-      setVal("height", u.height);
+      if (u.height) {
+        const hMatch = u.height.match(/^(\d+)'(\d+)"?$/);
+        if (hMatch) {
+          const fEl = document.getElementById("height-feet");
+          const iEl = document.getElementById("height-inches");
+          if (fEl) fEl.value = hMatch[1];
+          if (iEl) iEl.value = hMatch[2];
+        }
+      }
       setVal("status", u.status);
-      setVal("major", u.major);
+      if (u.major) {
+        const parts = u.major.split(" / ");
+        setVal("major", parts[0]);
+        if (parts[1]) {
+          const row2 = document.getElementById("second-major-row");
+          const addBtn = document.getElementById("add-second-major");
+          if (row2) row2.style.display = "block";
+          if (addBtn) addBtn.style.display = "none";
+          setVal("major2", parts[1]);
+        }
+      }
       setVal("interests", u.interests);
       setVal("bio", u.bio);
 
