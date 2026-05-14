@@ -60,7 +60,7 @@ async function saveProfilePayload(payload) {
 async function initCreateProfile() {
   const user = getCurrentUser();
   const errorEl = document.getElementById("profile-create-error");
-  
+
   if (!user) {
     if (errorEl) {
       errorEl.textContent = "You must be logged in to create a profile. Please log in first.";
@@ -94,9 +94,17 @@ async function initCreateProfile() {
 
     const gender = (document.getElementById("gender") || {}).value;
     const ageRaw = (document.getElementById("age") || {}).value;
-    const height = ((document.getElementById("height") || {}).value || "").trim();
+    const feetEl = document.getElementById("height-feet");
+    const inchesEl = document.getElementById("height-inches");
+    const feetVal = feetEl ? feetEl.value.trim() : "";
+    const inchesVal = inchesEl ? inchesEl.value.trim() : "";
+    const height = feetVal && inchesVal !== "" ? `${feetVal}'${inchesVal}"` : "";
     const status = (document.getElementById("status") || {}).value;
-    const major = ((document.getElementById("major") || {}).value || "").trim();
+    const majorVal = ((document.getElementById("major") || {}).value || "").trim();
+    const major2Val = ((document.getElementById("major2") || {}).value || "").trim();
+    const major = majorVal
+      ? (major2Val && major2Val !== majorVal ? `${majorVal} / ${major2Val}` : majorVal)
+      : null;
     const interests = ((document.getElementById("interests") || {}).value || "").trim();
     const bio = ((document.getElementById("bio") || {}).value || "").trim();
 
@@ -197,7 +205,39 @@ async function initCreateProfile() {
       }
     });
   }
+  // Enforce digits-only on height inputs
+  ["height-feet", "height-inches"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      el.value = el.value.replace(/\D/g, "");
+    });
+    el.addEventListener("keydown", (e) => {
+      const allowed = ["Backspace", "Delete", "Tab", "ArrowLeft", "ArrowRight", "Home", "End"];
+      if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+  });
 
+  // Second major toggle
+  const addMajorBtn = document.getElementById("add-second-major");
+  const secondMajorRow = document.getElementById("second-major-row");
+  const removeMajorBtn = document.getElementById("remove-second-major");
+  if (addMajorBtn && secondMajorRow) {
+    addMajorBtn.addEventListener("click", () => {
+      secondMajorRow.style.display = "block";
+      addMajorBtn.style.display = "none";
+    });
+  }
+  if (removeMajorBtn && secondMajorRow) {
+    removeMajorBtn.addEventListener("click", () => {
+      secondMajorRow.style.display = "none";
+      const m2 = document.getElementById("major2");
+      if (m2) m2.value = "";
+      if (addMajorBtn) addMajorBtn.style.display = "";
+    });
+  }
   // Fetch existing profile and populate form for editing
   try {
     const res = await fetch(`${PROFILE_API_BASE}/profile/${userId}`, {
@@ -206,7 +246,7 @@ async function initCreateProfile() {
     const data = await res.json();
     if (res.ok && data.success && data.user) {
       const u = data.user;
-      
+
       // Store existing profile picture for potential reuse
       if (u.profile_picture) {
         existingProfilePicture = u.profile_picture;
@@ -215,7 +255,7 @@ async function initCreateProfile() {
         const ph = document.getElementById("profile-photo-placeholder");
         if (ph) ph.style.display = "none";
       }
-      
+
       // Populate form fields with existing data
       const setVal = (id, val) => {
         const el = document.getElementById(id);
@@ -223,12 +263,30 @@ async function initCreateProfile() {
       };
       setVal("gender", u.gender);
       setVal("age", u.age);
-      setVal("height", u.height);
+      if (u.height) {
+        const hMatch = u.height.match(/^(\d+)'(\d+)"?$/);
+        if (hMatch) {
+          const fEl = document.getElementById("height-feet");
+          const iEl = document.getElementById("height-inches");
+          if (fEl) fEl.value = hMatch[1];
+          if (iEl) iEl.value = hMatch[2];
+        }
+      }
       setVal("status", u.status);
-      setVal("major", u.major);
+      if (u.major) {
+        const parts = u.major.split(" / ");
+        setVal("major", parts[0]);
+        if (parts[1]) {
+          const row2 = document.getElementById("second-major-row");
+          const addBtn = document.getElementById("add-second-major");
+          if (row2) row2.style.display = "block";
+          if (addBtn) addBtn.style.display = "none";
+          setVal("major2", parts[1]);
+        }
+      }
       setVal("interests", u.interests);
       setVal("bio", u.bio);
-      
+
       // Update heading and button text for edit mode
       const heading = document.querySelector(".page-heading h1");
       if (heading) heading.textContent = "Edit your profile";

@@ -112,6 +112,19 @@ async function handleRegister(event) {
 
   const first_name = firstNameInput.value.trim();
   const last_name = lastNameInput.value.trim();
+
+  const NAME_RE = /^[A-Za-zÀ-ÖØ-öø-ÿÑñÜüÄäÖöẞß'\-\s~]{1,35}$/;
+  if (!NAME_RE.test(first_name)) {
+    errorEl.textContent = "First name may only contain letters, hyphens, apostrophes, and diacritics (max 35 characters).";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (!NAME_RE.test(last_name)) {
+    errorEl.textContent = "Last name may only contain letters, hyphens, apostrophes, and diacritics (max 35 characters).";
+    errorEl.style.display = "block";
+    return;
+  }
+
   const email = emailInput.value.trim().toLowerCase();
   const password = passwordInput.value;
 
